@@ -6,7 +6,7 @@ from src.prepare_data import load_dataset
 
 def train():
     # Путь к датасету
-    data_path = "test-00000-of-00001.parquet"  # Загрузи этот файл в Colab вручную или с Google Drive
+    data_path = "/content/drive/MyDrive/Colab Notebooks/test-00000-of-00001.parquet"
 
     # Загружаем и форматируем данные
     texts = load_dataset(data_path)
