@@ -1,30 +1,36 @@
 import torch
-from transformers import AutoTokenizer, AutoModelForCausalLM, TrainingArguments, Trainer, DataCollatorForLanguageModeling
-from peft import LoraConfig, get_peft_model, prepare_model_for_kbit_training
+from transformers import AutoTokenizer, TrainingArguments, Trainer, DataCollatorForLanguageModeling
+from peft import LoraConfig, get_peft_model
 from datasets import Dataset
 from prepare_data import load_dataset
+from auto_gptq import AutoGPTQForCausalLM
 
 def train():
-    # Путь к датасету
+    # Путь к датасету (если в Colab — в корень загрузили вручную)
     data_path = "/content/test-00000-of-00001.parquet"
 
     # Загружаем и форматируем данные
     texts = load_dataset(data_path)
     dataset = Dataset.from_dict({"text": texts})
 
-    # Загружаем модель и токенизатор
+    # Имя модели
     model_name = "TheBloke/Mistral-7B-Instruct-v0.1-GPTQ"
-    tokenizer = AutoTokenizer.from_pretrained(model_name)
-    model = AutoModelForCausalLM.from_pretrained(
+
+    # Загружаем токенизатор
+    tokenizer = AutoTokenizer.from_pretrained(model_name, use_fast=True)
+    tokenizer.pad_token = tokenizer.eos_token
+
+    # Загружаем квантованную модель
+    model = AutoGPTQForCausalLM.from_quantized(
         model_name,
-        device_map="auto",
-        load_in_8bit=True,
-        torch_dtype=torch.float16
+        device="cuda",
+        use_safetensors=True,
+        inject_fused_attention=False,
+        trust_remote_code=True,
+        revision="main"
     )
 
     # Подготовка модели для LoRA
-    model = prepare_model_for_kbit_training(model)
-
     lora_config = LoraConfig(
         r=8,
         lora_alpha=32,
@@ -35,33 +41,34 @@ def train():
     )
     model = get_peft_model(model, lora_config)
 
-    # Тренировочные аргументы
+    # Параметры обучения
     training_args = TrainingArguments(
-        output_dir="./outputs",
-        per_device_train_batch_size=2,
-        gradient_accumulation_steps=4,
+        output_dir="./results",
         num_train_epochs=1,
+        per_device_train_batch_size=1,
+        gradient_accumulation_steps=4,
         learning_rate=2e-4,
         fp16=True,
+        logging_dir="./logs",
         logging_steps=10,
-        save_steps=50,
-        save_total_limit=2,
+        save_strategy="no",
         report_to="none"
     )
 
+    # Коллатор данных
     data_collator = DataCollatorForLanguageModeling(tokenizer=tokenizer, mlm=False)
 
-    # Trainer
+    # Тренер
     trainer = Trainer(
         model=model,
         args=training_args,
         train_dataset=dataset,
-        tokenizer=tokenizer,
-        data_collator=data_collator
+        data_collator=data_collator,
+        tokenizer=tokenizer
     )
 
+    # Обучение
     trainer.train()
-    model.save_pretrained("./outputs/final_model")
 
 if __name__ == "__main__":
     train()
