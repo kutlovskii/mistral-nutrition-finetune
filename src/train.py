@@ -63,4 +63,5 @@ def train():
     trainer.train()
     model.save_pretrained("./outputs/final_model")
 
-if __name__ ==
+if __name__ == "__main__":
+    train()
