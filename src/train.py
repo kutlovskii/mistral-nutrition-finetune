@@ -2,7 +2,7 @@ import torch
 from transformers import AutoTokenizer, AutoModelForCausalLM, TrainingArguments, Trainer, DataCollatorForLanguageModeling
 from peft import LoraConfig, get_peft_model, prepare_model_for_kbit_training
 from datasets import Dataset
-from src.prepare_data import load_dataset
+from prepare_data import load_dataset
 
 def train():
     # Путь к датасету
