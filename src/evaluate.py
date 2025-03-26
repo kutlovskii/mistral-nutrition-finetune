@@ -1,7 +1,7 @@
 import torch
 from transformers import AutoTokenizer, AutoModelForCausalLM
 from evaluate import load
-from src.prepare_data import load_dataset
+from prepare_data import load_dataset
 
 def evaluate():
     # Путь к датасету и модели
