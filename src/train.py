@@ -6,7 +6,7 @@ from prepare_data import load_dataset
 
 def train():
     # Путь к датасету
-    data_path = "/content/drive/MyDrive/Colab Notebooks/test-00000-of-00001.parquet"
+    data_path = "/content/test-00000-of-00001.parquet"
 
     # Загружаем и форматируем данные
     texts = load_dataset(data_path)
