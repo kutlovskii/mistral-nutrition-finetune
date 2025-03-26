@@ -13,7 +13,7 @@ def train():
     dataset = Dataset.from_dict({"text": texts})
 
     # Загружаем модель и токенизатор
-    model_name = "NousResearch/Nous-Hermes-2-Mistral-7B-DPO"
+    model_name = "openaccess-ai-collective/mistral-7b-instruct-openorca"
     tokenizer = AutoTokenizer.from_pretrained(model_name)
     model = AutoModelForCausalLM.from_pretrained(
         model_name,
