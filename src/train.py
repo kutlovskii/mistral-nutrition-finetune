@@ -23,7 +23,7 @@ def train():
     # Загружаем квантованную модель
     model = AutoGPTQForCausalLM.from_quantized(
         model_name,
-        device="cuda",
+        device_map="auto",
         use_safetensors=True,
         inject_fused_attention=False,
         trust_remote_code=True,
